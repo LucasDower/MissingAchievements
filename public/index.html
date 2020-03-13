@@ -9,6 +9,7 @@
   <meta name="description" content="A website to show a player's missing Steam achievements">
 
   <!-- Icons -->
+  <!--
   <link rel="apple-touch-icon" sizes="57x57" href="./img/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="./img/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="./img/apple-icon-72x72.png">
@@ -25,7 +26,7 @@
   <link rel="manifest" href="./img/manifest.json">
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#ffffff">-->
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -41,31 +42,32 @@
           <div class="input-group-prepend">
             <span class="input-group-text" id="basic-addon1">SteamID64</span>
           </div>
-          <input type="text" name="id" id="username" class="form-control" placeholder="76561198049905672" aria-label="Username"
-            aria-describedby="basic-addon1" required>
+          <input type="text" name="u_id" id="username" class="form-control" placeholder="76561198049905672"
+            aria-label="Username" aria-describedby="basic-addon1" required>
           <div class="input-group-append">
-            <button class="btn btn-primary" type="submit" id="button-addon2"><i style="color:white" class="fas fa-search"></i></button>
+            <button class="btn btn-primary" type="submit" id="button-addon2"><i style="color:white"
+                class="fas fa-search"></i></button>
           </div>
         </div>
       </form>
       <!-- Game-Select Form -->
-      <form class="form-inline" id="gameForm">
-        <fieldset disabled id="fieldset">
-          <div class="input-group ml-2">
-            <div class="input-group-prepend">
-              <label class="input-group-text" for="inputGroupSelect01">Games</label>
-            </div>
-            <select class="custom-select" id="inputGroupSelect01" type="submit">
-              <option selected>Choose...</option>
-              <option value="1"><i style="color:white" class="fas fa-search"></i>One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
-            </select>
+      <form class="form-inline" id="gameForm" method="GET">
+        <div class="input-group ml-2">
+          <div class="input-group-prepend">
+            <label class="input-group-text" for="select">Games</label>
           </div>
-        </fieldset>
+          <input type="hidden" name="u_id" id="username2" class="form-control" aria-label="Username"
+            aria-describedby="basic-addon1">
+          <select disabled class="custom-select" name="g_id" id="select" type="submit">
+            <option selected>Choose...</option>
+          </select>
+        </div>
       </form>
     </div>
   </nav>
+
+  <div id="container" class="container mt-5">
+  </div>
 
   <!-- Custom JS -->
   <script src="./script.js"></script>

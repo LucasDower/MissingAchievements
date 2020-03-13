@@ -2,6 +2,16 @@ let json = { "response": { "game_count": 143, "games": [{ "appid": 220, "name": 
 
 ownedGamesIDs = json.response.games
     .filter(game => game.playtime_forever > 0)
-    .map(game => { return { 'appid': game.appid, 'name': game.name }; });
+    .map(game => { return { 'appid': game.appid, 'name': game.name }; })
+    .sort((a,b) => {
+        if (a.name < b.name) {
+            return -1;
+        }
+        if (a.name > b.name) {
+            return 1;
+        }
+        return 0;
+    });
 
 console.log(ownedGamesIDs);
+console.log('aaa' < 'b');
