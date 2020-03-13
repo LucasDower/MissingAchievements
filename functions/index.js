@@ -4,6 +4,7 @@ const api_key = functions.config().steam.key;
 const u_id_re = new RegExp('^([0-9]).{16}$');
 const g_id_re = new RegExp('^[0-9]{1,}$');
 
+
 exports.getOwnedGames = functions.https.onRequest(async (request, response) => {
 
     // CORS
@@ -78,6 +79,8 @@ exports.getOwnedGames = functions.https.onRequest(async (request, response) => {
     return;
 });
 
+
+
 exports.getMissingAchievements = functions.https.onRequest(async (request, response) => {
 
     // CORS
@@ -137,12 +140,11 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
             return;
         });
 
-    // ["1_0_LIFE_STORY","1_1_JUST_GETTING_STARTED","1_2_BALAHOS_MOST_WANTED","1_3_THE_ONE_PERCENT","1_4_SPOILSPORT",...]
-    const user_locked = steam_request.playerstats.achievements
+    const user_locked = steam_response.playerstats.achievements
         .filter(x => x.achieved === 0)
         .map(x => x.apiname);
 
-
+    // ---------------------------------------
 
     steam_request = `http://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid=${g_id}`;
 
@@ -164,10 +166,10 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
             return;
         });
 
-    // [{"name":"1_26_YOUR_JOURNEY_BEGINS","percent":95.0999984741210938},{"name":"22_16_IM_SORRY_DAVE","percent":90.5999984741210938},...]
-    const global_achievements = steam_request.achievementpercentages.achievements;
+    const global_achievements = steam_response.achievementpercentages.achievements
+        .filter(x => x.percent > 0);
 
-
+    // ---------------------------------------
 
     steam_request = `http://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=${api_key}&appid=${g_id}`;
 
@@ -189,8 +191,8 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
             return;
         });
 
-    const achievement_schemas = steam_request.game.availableGameStats.achievements
-        .filter(x => x.name in user_locked)
+    const achievement_schemas = steam_response.game.availableGameStats.achievements
+        .filter(x => user_locked.includes(x.name))
         .map(x => {
             return {
                 'name': x.name,
@@ -201,7 +203,6 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
         });
 
 
-
     let output = [];
     for (let i = 0; i < achievement_schemas.length; i++) {
         let schema = achievement_schemas[i];
@@ -210,18 +211,17 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
 
         let percent_found = false;
         for (let j = 0; j < global_achievements.length; j++) {
-            let achievement = global_achievements[i];
+            let achievement = global_achievements[j];
             if (achievement.name === schema.name) {
-                percent = achievement.percent;
+                percent = parseFloat(achievement.percent);
                 percent_found = true;
                 break;
             }
         }
 
         if (!percent_found) {
-            console.info('Percent not found');
-            response.status(503).send('Percent not found');
-            return;
+            // Missing achievement cannot be unlocked.
+            continue;
         }
 
         output.push({
@@ -233,7 +233,19 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
 
     }
 
+    
+    output = output.sort((a, b) => {
+        if (a.percent > b.percent) {
+            return -1;
+        }
+        if (a.percent < b.percent) {
+            return 1;
+        }
+        return 0;
+    });
+    
+
     response.setHeader('Content-Type', 'application/json');
-    response.send(ownedGames);
+    response.send(output);
     return;
 });
