@@ -31,7 +31,7 @@ async function makeRequest(request) {
         });
 }
 
-exports.getOwnedGames = functions.https.onRequest(async (request, response) => {
+exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (request, response) => {
 
     // Ensure the 'u_id' parameter has been given and valid.
     const u_id = testParameter(request, 'u_id', u_id_re);
@@ -75,7 +75,7 @@ exports.getOwnedGames = functions.https.onRequest(async (request, response) => {
 
 
 
-exports.getMissingAchievements = functions.https.onRequest(async (request, response) => {
+exports.getMissingAchievements = functions.region('europe-west2').https.onRequest(async (request, response) => {
 
     // Ensure the 'u_id' and 'g_id' has been given and valid.
     const u_id = testParameter(request, 'u_id', u_id_re);
@@ -150,8 +150,6 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
         return;
     }
 
-
-
     // Parse response.
     let achievement_schemas;
     try {
@@ -171,6 +169,7 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
         return;
     }
 
+    
 
     let output = [];
     for (let i = 0; i < achievement_schemas.length; i++) {
