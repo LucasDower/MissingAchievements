@@ -7,17 +7,6 @@ const g_id_re = new RegExp('^[0-9]{1,}$');
 
 exports.getOwnedGames = functions.https.onRequest(async (request, response) => {
 
-    // CORS
-    response.set('Access-Control-Allow-Origin', '*');
-    if (request.method === 'OPTIONS') {
-        // Send response to OPTIONS requests
-        response.set('Access-Control-Allow-Methods', 'GET');
-        response.set('Access-Control-Allow-Headers', 'Content-Type');
-        response.set('Access-Control-Max-Age', '3600');
-        response.status(204).send('');
-        return;
-    }
-
     // Ensure the 'id' parameter has been given.
     if (!Object.keys(request.query).includes('id')) {
         console.log('Missing id parameter');
@@ -83,17 +72,6 @@ exports.getOwnedGames = functions.https.onRequest(async (request, response) => {
 
 exports.getMissingAchievements = functions.https.onRequest(async (request, response) => {
 
-    // CORS
-    response.set('Access-Control-Allow-Origin', '*');
-    if (request.method === 'OPTIONS') {
-        // Send response to OPTIONS requests
-        response.set('Access-Control-Allow-Methods', 'GET');
-        response.set('Access-Control-Allow-Headers', 'Content-Type');
-        response.set('Access-Control-Max-Age', '3600');
-        response.status(204).send('');
-        return;
-    }
-
     // Ensure the 'u_id' and 'g_id' has been given.
     const givenFields = Object.keys(request.query);
     if (!givenFields.includes('u_id') || !givenFields.includes('g_id')) {
@@ -140,7 +118,7 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
             return;
         });
 
-    const user_locked = steam_response.playerstats.achievements
+    const user_locked = (steam_response.playerstats.achievements || [])
         .filter(x => x.achieved === 0)
         .map(x => x.apiname);
 
@@ -166,8 +144,14 @@ exports.getMissingAchievements = functions.https.onRequest(async (request, respo
             return;
         });
 
+    try {
     const global_achievements = steam_response.achievementpercentages.achievements
         .filter(x => x.percent > 0);
+    } catch (e) {
+        console.info(err);
+            response.status(503).send('Error getting request from GetGlobalAchievementPercentagesForApp');
+            return;
+    }
 
     // ---------------------------------------
 
