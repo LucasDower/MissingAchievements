@@ -33,6 +33,9 @@ async function makeRequest(request) {
 
 exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (request, response) => {
 
+    // CORS
+    res.set('Access-Control-Allow-Origin', 'https://missingachievements.web.app');
+
     // Ensure the 'u_id' parameter has been given and valid.
     const u_id = testParameter(request, 'u_id', u_id_re);
     if (!u_id) {
@@ -76,6 +79,9 @@ exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (
 
 
 exports.getMissingAchievements = functions.region('europe-west2').https.onRequest(async (request, response) => {
+
+    // CORS
+    res.set('Access-Control-Allow-Origin', 'https://missingachievements.web.app');
 
     // Ensure the 'u_id' and 'g_id' has been given and valid.
     const u_id = testParameter(request, 'u_id', u_id_re);
