@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (u_id) {
         spinner.classList.remove('hidden');
 
-        let ownedGames = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getOwnedGames?id=${u_id}`);
+        let ownedGames = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getOwnedGames?u_id=${u_id}`);
 
         for (let i = 0; i < ownedGames.length; i++) {
             var option = document.createElement('option');
