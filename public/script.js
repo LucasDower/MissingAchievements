@@ -26,6 +26,35 @@ const temp = d => `<div class="card m-3">
 </div>
 </div>`;
 
+const profile = d => 
+`<div class="card m-3 border-0">
+    <div class="card-body" style="width: 100%;">
+        <div class="row">
+            <img src="${d.avatar}"
+                width="100" height="100" class="mb-2 mx-auto rounded-circle" alt="">
+        </div>
+        <div class="row d-flex justify-content-center">
+            <h3 class="m-0">${d.name}</h3>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <p class="mb-2 text-muted">${d.game}</p>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <span class="badge m-1 badge-pill badge-success">${d.unlocked} achieved</span>
+            <span class="badge m-1 badge-pill badge-primary">${d.locked} unlockable</span>
+            <span class="badge m-1 badge-pill badge-danger">${d.unobtainable} unobtainable</span>
+        </div>
+        <div class="mx-auto progress rounded-pill mt-2" style="width:75%">
+            <div class="progress-bar bg-success" role="progressbar" style="width: ${d.unlocked*100/d.total}%"
+                aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar bg-primary" role="progressbar" style="width: ${d.locked*100/d.total}%"
+                aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar bg-danger" role="progressbar" style="width: ${d.unobtainable*100/d.total}%"
+                aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+</div>`;
+
 
 idForm.addEventListener('submit', e => {
     if (!re.test(userID.value)) {
@@ -49,20 +78,19 @@ select.addEventListener('change', e => {
 });
 
 async function callCloudFunction(url) {
-    let request = await new Promise((res, rej) => {
+    return await new Promise((res, rej) => {
         const ajax = new XMLHttpRequest();
         ajax.open("GET", url);
         ajax.onload = function () {
             if (this.status == 200) {
                 res(JSON.parse(this.responseText));
             } else {
-                res([]);
+                res({});
             }
         };
         ajax.onerror = rej;
         ajax.send();
     });
-    return request;
 }
 
 function testParameter(key, regex) {
@@ -84,11 +112,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     let g_id = testParameter('g_id', g_id_re);
 
     if (u_id && g_id) {
+
         spinner.classList.remove('hidden');
 
         let missingAchievements = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
+        if (missingAchievements === {}) {
+            spinner.classList.add('hidden');
+            return;
+        }
 
-        for (let r of missingAchievements) {
+        let p = missingAchievements.stats;
+        p.total = p.locked + p.unlocked + p.unobtainable;
+        container.innerHTML += profile(p);
+
+        for (let r of missingAchievements.achievements) {
             r.percent = r.percent.toFixed(2);
             container.innerHTML += temp(r);
         }
@@ -100,6 +137,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         spinner.classList.remove('hidden');
 
         let ownedGames = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getOwnedGames?u_id=${u_id}`);
+        if (ownedGames === {}) {
+            spinner.classList.add('hidden');
+            return;
+        }
+        ownedGames = ownedGames.games;
 
         for (let i = 0; i < ownedGames.length; i++) {
             var option = document.createElement('option');
