@@ -71,7 +71,7 @@ function testParameter(key, regex) {
     if (!urlParams.has(key)) {
         return false;
     }
-    value = urlParams.get(key);
+    let value = urlParams.get(key);
     if (!regex.test(value)) {
         return false;
     }
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (u_id && g_id) {
         spinner.classList.remove('hidden');
 
-        let missingAchievements = await callCloudFunction(`https://us-central1-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
+        let missingAchievements = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
 
         for (let r of missingAchievements) {
             r.percent = r.percent.toFixed(2);
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (u_id) {
         spinner.classList.remove('hidden');
 
-        let ownedGames = await callCloudFunction(`https://us-central1-missingachievements.cloudfunctions.net/getOwnedGames?id=${u_id}`);
+        let ownedGames = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getOwnedGames?id=${u_id}`);
 
         for (let i = 0; i < ownedGames.length; i++) {
             var option = document.createElement('option');
