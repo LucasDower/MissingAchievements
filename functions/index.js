@@ -15,8 +15,25 @@ function testParameter(request, key, regex) {
     return value;
 }
 
+function binarySearchAttribute(low, high, array, search, attribute) {
+    while (low <= high) {
+        let pivot = Math.floor((high + low) / 2);
+        let entry = array[pivot][attribute];
+        if (search < entry) {
+            high = pivot - 1;
+        }
+        if (search > entry) {
+            low = pivot + 1;
+        }
+        if (search === entry) {
+            return pivot;
+        }
+    }
+    return null;
+}
+
 async function makeRequest(request) {
-    await fetch(request)
+    return await fetch(request)
         .then(res => res.json())
         .catch(err => {
             console.error(err);
@@ -33,8 +50,7 @@ async function makeRequest(request) {
 
 exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (request, response) => {
 
-    // CORS
-    res.set('Access-Control-Allow-Origin', 'https://missingachievements.web.app');
+    response.set('Access-Control-Allow-Origin', '*');
 
     // Ensure the 'u_id' parameter has been given and valid.
     const u_id = testParameter(request, 'u_id', u_id_re);
@@ -45,11 +61,12 @@ exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (
     }
 
     // Get details of the games the user owns.
-    const steam_request = `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${api_key}&steamid=${user_id}&include_appinfo=true`;
-
+    const steam_request = `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${api_key}&steamid=${u_id}&include_appinfo=true`;
+    console.log(steam_request);
     // Make request.
     let steam_response = await makeRequest(steam_request);
-    if (steam_response.length === 0) {
+    console.log(steam_response);
+    if (steam_response === []) {
         const error = "Error when requesting IPlayerService/GetOwnedGames";
         console.error(error);
         response.status(500).send(error);
@@ -70,9 +87,14 @@ exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (
             return 0;
         });
 
+    let output = { games: ownedGames };
+
+
+
     // Send response.
+    response.set('Cache-Control', 'public, max-age=300, s-maxage=600');
     response.setHeader('Content-Type', 'application/json');
-    response.send(ownedGames);
+    response.send(output);
     return;
 });
 
@@ -81,7 +103,7 @@ exports.getOwnedGames = functions.region('europe-west2').https.onRequest(async (
 exports.getMissingAchievements = functions.region('europe-west2').https.onRequest(async (request, response) => {
 
     // CORS
-    res.set('Access-Control-Allow-Origin', 'https://missingachievements.web.app');
+    response.set('Access-Control-Allow-Origin', '*');
 
     // Ensure the 'u_id' and 'g_id' has been given and valid.
     const u_id = testParameter(request, 'u_id', u_id_re);
@@ -99,7 +121,7 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
 
     // Make request.
     let steam_response = await makeRequest(steam_request);
-    if (steam_response.length === 0) {
+    if (steam_response === []) {
         const error = "Error when requesting ISteamUserStats/GetPlayerAchievements";
         console.error(error);
         response.status(500).send(error);
@@ -113,10 +135,11 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
             .filter(x => x.achieved === 0)
             .map(x => x.apiname);
     } catch (e) {
-        console.info(err);
+        console.info(e);
         response.status(503).send('Error getting request from GetGlobalAchievementPercentagesForApp');
         return;
     }
+    let locked = user_locked.length; // 576
 
 
     // Get achievement unlock percentages.
@@ -124,7 +147,7 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
 
     // Make request.
     steam_response = await makeRequest(steam_request);
-    if (steam_response.length === 0) {
+    if (steam_response === []) {
         const error = "Error when requesting ISteamUserStats/GetGlobalAchievementPercentagesForApp";
         console.error(error);
         response.status(500).send(error);
@@ -133,14 +156,21 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
 
     // Parse response.
     let global_achievements;
+    let total; // 700
+    let unlockable;
     try {
-        global_achievements = steam_response.achievementpercentages.achievements
-            .filter(x => x.percent > 0);
+        global_achievements = steam_response.achievementpercentages.achievements;
+        total = global_achievements.length;
+        global_achievements = global_achievements.filter(x => x.percent > 0);
+        unlockable = global_achievements.length;
     } catch (e) {
         console.info(err);
         response.status(503).send('Error when requesting ISteamUserStats/GetGlobalAchievementPercentagesForApp');
         return;
     }
+    let unobtainable = total - unlockable;
+    let unlocked = total - locked;
+    locked = unlockable - unlocked;
 
 
 
@@ -149,7 +179,7 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
 
     // Make request.
     steam_response = await makeRequest(steam_request);
-    if (steam_response.length === 0) {
+    if (steam_response === []) {
         const error = "Error when requesting ISteamUserStats/GetSchemaForGame";
         console.error(error);
         response.status(500).send(error);
@@ -158,7 +188,9 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
 
     // Parse response.
     let achievement_schemas;
+    let game_name;
     try {
+        game_name = steam_response.game.gameName;
         achievement_schemas = steam_response.game.availableGameStats.achievements
             .filter(x => user_locked.includes(x.name))
             .map(x => {
@@ -175,28 +207,54 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
         return;
     }
 
-    
+
+
+    // Get profile details.
+    steam_request = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${api_key}&steamids=${u_id}`;
+
+    // Make request.
+    steam_response = await makeRequest(steam_request);
+    if (steam_response === []) {
+        const error = "Error when requesting ISteamUser/GetPlayerSummaries";
+        console.error(error);
+        response.status(500).send(error);
+        return;
+    }
+
+    // Parse response.
+    let user_name;
+    let user_avatar;
+    try {
+        let user = steam_response.response.players[0];
+        user_name = user.personaname;
+        user_avatar = user.avatarfull;
+    } catch (e) {
+        console.info(err);
+        response.status(503).send('Error when requesting ISteamUserStats/GetSchemaForGame');
+        return;
+    }
+
+    global_achievements = global_achievements.sort((a, b) => {
+        if (a.name > b.name) {
+            return 1;
+        }
+        if (a.name < b.name) {
+            return -1;
+        }
+        return 0;
+    });
 
     let output = [];
     for (let i = 0; i < achievement_schemas.length; i++) {
         let schema = achievement_schemas[i];
 
-        let percent = null;
-
-        let percent_found = false;
-        for (let j = 0; j < global_achievements.length; j++) {
-            let achievement = global_achievements[j];
-            if (achievement.name === schema.name) {
-                percent = parseFloat(achievement.percent);
-                percent_found = true;
-                break;
-            }
-        }
-
-        if (!percent_found) {
-            // Missing achievement cannot be unlocked.
+        let index = binarySearchAttribute(0, global_achievements.length - 1, global_achievements, schema.name, 'name');
+        if (!index) {
             continue;
         }
+
+        let percent = parseFloat(global_achievements[index].percent);
+        global_achievements.splice(index, 1);
 
         output.push({
             display_name: schema.display_name,
@@ -204,9 +262,7 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
             percent: percent,
             icon: schema.icon
         });
-
     }
-
 
     output = output.sort((a, b) => {
         if (a.percent > b.percent) {
@@ -218,7 +274,11 @@ exports.getMissingAchievements = functions.region('europe-west2').https.onReques
         return 0;
     });
 
+    output = { 'stats': { 'name': user_name, 'avatar': user_avatar, 'game': game_name, 'locked': locked, 'unlocked': unlocked, 'unobtainable': unobtainable }, 'achievements': output };
 
+
+
+    response.set('Cache-Control', 'public, max-age=300, s-maxage=600');
     response.setHeader('Content-Type', 'application/json');
     response.send(output);
     return;
