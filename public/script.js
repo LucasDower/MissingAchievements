@@ -4,6 +4,7 @@ const idForm = document.getElementById('idForm');
 const gameForm = document.getElementById('gameForm');
 const error = document.getElementById('error');
 const select = document.getElementById('select');
+const gameName = document.getElementById('gameName');
 const container = document.getElementById('container');
 const spinner = document.getElementById('spinner');
 const u_id_re = new RegExp('^([0-9]).{16}$');
@@ -26,8 +27,8 @@ const temp = d => `<div class="card m-3 border-0">
 </div>
 </div>`;
 
-const profile = d => 
-`<div class="card m-3 border-0">
+const profile = d =>
+    `<div class="card m-3 border-0">
     <div class="card-body" style="background-color:#f0f0f0;">
         <div class="row">
             <img src="${d.avatar}"
@@ -45,11 +46,11 @@ const profile = d =>
             <span class="badge m-1 badge-pill badge-danger">${d.unobtainable} unobtainable</span>
         </div>
         <div class="mx-auto progress rounded-pill mt-2" style="width:75%">
-            <div class="progress-bar bg-success" role="progressbar" style="width: ${d.unlocked*100/d.total}%"
+            <div class="progress-bar bg-success" role="progressbar" style="width: ${d.unlocked * 100 / d.total}%"
                 aria-valuemin="0" aria-valuemax="100"></div>
-            <div class="progress-bar bg-primary" role="progressbar" style="width: ${d.locked*100/d.total}%"
+            <div class="progress-bar bg-primary" role="progressbar" style="width: ${d.locked * 100 / d.total}%"
                 aria-valuemin="0" aria-valuemax="100"></div>
-            <div class="progress-bar bg-danger" role="progressbar" style="width: ${d.unobtainable*100/d.total}%"
+            <div class="progress-bar bg-danger" role="progressbar" style="width: ${d.unobtainable * 100 / d.total}%"
                 aria-valuemin="0" aria-valuemax="100"></div>
         </div>
     </div>
@@ -74,6 +75,7 @@ select.addEventListener('change', e => {
     }
 
     userID2.value = u_id;
+    gameName.value = select.options[select.selectedIndex].innerHTML;
     gameForm.submit();
 });
 
@@ -121,7 +123,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        let urlParams = new URLSearchParams(window.location.search);
         let p = missingAchievements.stats;
+        if (urlParams.has('g_name')) {
+            p.game = urlParams.get('g_name');
+        }
         p.total = p.locked + p.unlocked + p.unobtainable;
         container.innerHTML += profile(p);
 
