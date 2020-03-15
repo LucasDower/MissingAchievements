@@ -56,6 +56,7 @@ const profile = d =>
     </div>
 </div>`;
 
+const warning = msg => `<div class="alert alert-danger mt-6" role="alert">${msg}</div>`;
 
 idForm.addEventListener('submit', e => {
     if (!re.test(userID.value)) {
@@ -85,9 +86,11 @@ async function callCloudFunction(url) {
         ajax.open("GET", url);
         ajax.onload = function () {
             if (this.status == 200) {
+                console.log('a');
                 res(JSON.parse(this.responseText));
             } else {
-                res({});
+                console.log('b');
+                res(null);
             }
         };
         ajax.onerror = rej;
@@ -118,7 +121,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         spinner.classList.remove('hidden');
 
         let missingAchievements = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
-        if (missingAchievements === {}) {
+        console.log("mA:");
+        console.log(missingAchievements);
+        if (missingAchievements === null) {
+            container.innerHTML += warning('Selected game does not support achievements.');
             spinner.classList.add('hidden');
             return;
         }
@@ -143,7 +149,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         spinner.classList.remove('hidden');
 
         let ownedGames = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getOwnedGames?u_id=${u_id}`);
-        if (ownedGames === {}) {
+        if (ownedGames === null) {
+            container.innerHTML += warning("Unable to retrieve user's owned games. Ensure profile visibility is public.");
             spinner.classList.add('hidden');
             return;
         }
@@ -162,6 +169,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         spinner.classList.add('hidden');
     }
-
 
 });
