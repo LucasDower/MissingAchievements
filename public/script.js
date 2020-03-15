@@ -59,7 +59,7 @@ const profile = d =>
 const warning = msg => `<div class="alert alert-danger mt-6" role="alert">${msg}</div>`;
 
 idForm.addEventListener('submit', e => {
-    if (!re.test(userID.value)) {
+    if (!u_id_re.test(userID.value)) {
         e.preventDefault();
         userID.classList.add('is-invalid');
     } else {
