@@ -86,10 +86,8 @@ async function callCloudFunction(url) {
         ajax.open("GET", url);
         ajax.onload = function () {
             if (this.status == 200) {
-                console.log('a');
                 res(JSON.parse(this.responseText));
             } else {
-                console.log('b');
                 res(null);
             }
         };
@@ -117,35 +115,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     let g_id = testParameter('g_id', g_id_re);
 
     if (u_id && g_id) {
-
+        userID.value = u_id;
         spinner.classList.remove('hidden');
 
         let missingAchievements = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
-        console.log("mA:");
-        console.log(missingAchievements);
         if (missingAchievements === null) {
             container.innerHTML += warning('Selected game does not support achievements.');
-            spinner.classList.add('hidden');
-            return;
-        }
+        } else {
+            let urlParams = new URLSearchParams(window.location.search);
+            let p = missingAchievements.stats;
+            if (urlParams.has('g_name')) {
+                p.game = urlParams.get('g_name');
+            }
+            p.total = p.locked + p.unlocked + p.unobtainable;
+            container.innerHTML += profile(p);
 
-        let urlParams = new URLSearchParams(window.location.search);
-        let p = missingAchievements.stats;
-        if (urlParams.has('g_name')) {
-            p.game = urlParams.get('g_name');
+            for (let r of missingAchievements.achievements) {
+                r.percent = r.percent.toFixed(2);
+                container.innerHTML += temp(r);
+            }
         }
-        p.total = p.locked + p.unlocked + p.unobtainable;
-        container.innerHTML += profile(p);
-
-        for (let r of missingAchievements.achievements) {
-            r.percent = r.percent.toFixed(2);
-            container.innerHTML += temp(r);
-        }
-
         spinner.classList.add('hidden');
     }
 
     if (u_id) {
+        userID.value = u_id;
         spinner.classList.remove('hidden');
 
         let ownedGames = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getOwnedGames?u_id=${u_id}`);
