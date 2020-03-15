@@ -9,7 +9,7 @@ const spinner = document.getElementById('spinner');
 const u_id_re = new RegExp('^([0-9]).{16}$');
 const g_id_re = new RegExp('^[0-9]{1,}$');
 
-const temp = d => `<div class="card m-3">
+const temp = d => `<div class="card m-3 border-0">
 <div class="card-body shadow p-3 bg-white rounded">
     <div class="media">
         <img src="${d.icon}" class="mr-3 rounded" alt="...">
@@ -28,10 +28,10 @@ const temp = d => `<div class="card m-3">
 
 const profile = d => 
 `<div class="card m-3 border-0">
-    <div class="card-body" style="width: 100%;">
+    <div class="card-body" style="background-color:#f0f0f0;">
         <div class="row">
             <img src="${d.avatar}"
-                width="100" height="100" class="mb-2 mx-auto rounded-circle" alt="">
+                width="100" height="100" class="mb-2 mx-auto rounded-circle shadow" alt="">
         </div>
         <div class="row d-flex justify-content-center">
             <h3 class="m-0">${d.name}</h3>

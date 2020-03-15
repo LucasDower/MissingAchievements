@@ -7,6 +7,7 @@
 
   <title>Missing Achievements</title>
   <meta name="description" content="A website to show a player's missing Steam achievements">
+  <meta name="author" content="Lucas Dower">
 
   <!-- Icons -->
   <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
@@ -17,10 +18,10 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 
-<body>
+<body style="background-color: #f0f0f0;">
 
   <nav class="navbar navbar-dark bg-dark">
     <div class="d-flex justify-content-start mx-auto">
@@ -28,12 +29,12 @@
       <form class="needs-validation form-inline" id="idForm" method="GET">
         <div class="input-group">
           <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">SteamID64</span>
+            <span class="input-group-text border-0 rounded-pill-left  pl-md-3" id="basic-addon1">SteamID64</span>
           </div>
-          <input type="text" name="u_id" id="username" class="form-control" placeholder="76561198049905672"
+          <input type="text" name="u_id" id="username" class="form-control border-0" placeholder="76561198049905672"
             aria-label="Username" aria-describedby="basic-addon1" required>
           <div class="input-group-append">
-            <button class="btn btn-primary" type="submit" id="button-addon2">
+            <button class="btn btn-primary border-0 rounded-pill-right pr-md-3" type="submit" id="button-addon2">
               <i style="color:white" class="fas fa-search"></i>
             </button>
           </div>
@@ -43,11 +44,11 @@
       <form class="form-inline" id="gameForm" method="GET">
         <div class="input-group ml-2">
           <div class="input-group-prepend">
-            <label class="input-group-text" for="select">Games</label>
+            <label class="input-group-text border-0 rounded-pill-left pl-md-3" for="select">Games</label>
           </div>
           <input type="hidden" name="u_id" id="username2" class="form-control" aria-label="Username"
             aria-describedby="basic-addon1">
-          <select disabled style="width: 400px;" class="custom-select" name="g_id" id="select" type="submit">
+          <select disabled style="width: 400px;" class="custom-select border-0 rounded-pill-right" name="g_id" id="select" type="submit">
             <option selected>Choose...</option>
           </select>
         </div>
@@ -58,19 +59,7 @@
     </div>
   </nav>
 
-  <div class="container" id="container"><div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-header">
-      <img src="..." class="rounded mr-2" alt="...">
-      <strong class="mr-auto">Bootstrap</strong>
-      <small>11 mins ago</small>
-      <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <div class="toast-body">
-      Hello, world! This is a toast message.
-    </div>
-  </div></div>
+  <div class="container" id="container"></div>
 
   <!-- Custom JS -->
   <script src="./script.js"></script>
