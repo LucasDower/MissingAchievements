@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/LucasDower/MissingAchievements/issues"
   },
-  "homepage": "https://github.com/LucasDower/MissingAchievements#readme"
+  "homepage": "https://github.com/LucasDower/MissingAchievements#readme",
+  "devDependencies": {
+    "eslint": "^7.25.0"
+  }
 }

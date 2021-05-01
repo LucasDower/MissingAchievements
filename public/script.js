@@ -118,7 +118,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         userID.value = u_id;
         spinner.classList.remove('hidden');
 
-        let missingAchievements = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
+        let missingAchievements = null;
+        try {
+            missingAchievements = await callCloudFunction(`https://europe-west2-missingachievements.cloudfunctions.net/getMissingAchievements?u_id=${u_id}&g_id=${g_id}`);
+        } catch (error) {
+            container.innerHTML += warning('Server not responding, try again later.');
+        }
         if (missingAchievements === null) {
             container.innerHTML += warning('Selected game does not support achievements.');
         } else {
