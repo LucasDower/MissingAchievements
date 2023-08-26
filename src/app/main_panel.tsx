@@ -112,10 +112,10 @@ export default function MainPanel() {
 
                 </div>
             </div>
-            <div className="basis-2/3 bg-zinc-800 p-6">
+            <div className="basis-2/3 bg-zinc-800">
                 { loadingAchievements ?
                     <Loading></Loading> :
-                    <div className="flex flex-col gap-2 text-sm h-full overflow-y-auto">
+                    <div className="flex flex-col gap-2 text-sm h-full overflow-y-auto p-8">
                         {achievements.map(x => <Achievement title={x.title} description={x.description} icon_url={x.icon} percent={x.percent} ></Achievement>)}
                     </div>
                 }

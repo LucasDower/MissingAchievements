@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col select-none">
         <Header></Header>
-        <div className="flex flex-col h-full overflow-y-auto">
+        <div className="flex flex-col h-full">
             <div className="flex h-full">
                 <MainPanel></MainPanel>
             </div>
