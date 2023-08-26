@@ -8,6 +8,7 @@ import Achievement from './achievement';
 import Loading from './loading';
 
 const USER_ID_REGEX = new RegExp('^([0-9]).{16}$');
+const GAME_ID_REGEX = new RegExp('^[0-9]{1,}$');
 
 export default function MainPanel() {
     const [steamId, setSteamId] = useState<string>('');
@@ -23,7 +24,6 @@ export default function MainPanel() {
 
     const fetchGameData = (userId: string) => {
         if (!USER_ID_REGEX.test(userId)) {
-            console.log('exiting...');
             return;
         }
 
@@ -42,29 +42,41 @@ export default function MainPanel() {
             });
     }
 
+    const fetchAchievementData = (userId: string, gameId: number) => {
+        if (!USER_ID_REGEX.test(userId)) {
+            return;
+        }
+
+        if (!GAME_ID_REGEX.test(gameId.toString())) {
+            return;
+        }
+
+        setAchievements([]);
+        setLoadingAchievements(true);
+        fetch(`http://localhost:3000/api/achievements?u_id=${userId}&g_id=${gameId}`)
+            .then(res => res.json())
+            .then(res => {
+                console.log(res);
+                setAchievements(res);
+                setLoadingAchievements(false);
+            })
+            .catch((err) => {
+                console.log(err);
+                setAchievements([]);
+                setSelectedGameId(NaN);
+                setLoadingAchievements(false);
+            });
+    };
+
     const handleLoadButton = () => {
+        setAchievements([]);
         fetchGameData(steamId);
     };
 
-    useEffect(() => {
-        if (!isNaN(selectedGameId)) {
-            setAchievements([]);
-            setLoadingAchievements(true);
-            fetch(`http://localhost:3000/api/achievements?u_id=${steamId}&g_id=${selectedGameId}`)
-                .then(res => res.json())
-                .then(res => {
-                    console.log(res);
-                    setAchievements(res);
-                    setLoadingAchievements(false);
-                })
-                .catch((err) => {
-                    console.log(err);
-                    setAchievements([]);
-                    setSelectedGameId(NaN);
-                    setLoadingAchievements(false);
-                });
-        }
-    }, [selectedGameId]);
+    const handleGameClick = (gameId: number) => {
+        setSelectedGameId(gameId);
+        fetchAchievementData(steamId, gameId);
+    };
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -105,7 +117,7 @@ export default function MainPanel() {
                         {loadingGames ?
                             <Loading></Loading> :
                             <div className="flex flex-col gap-2 text-sm">
-                                {gamesInfo.map(x => <Game handleClick={() => { setSelectedGameId(x.id); }} is_selected={x.id === selectedGameId} has_achievements={x.has_achievements} icon_url={x.icon_url} title={x.title}></Game>)}
+                                {gamesInfo.map(x => <Game key={x.id} handleClick={() => { handleGameClick(x.id); }} is_selected={x.id === selectedGameId} has_achievements={x.has_achievements} icon_url={x.icon_url} title={x.title}></Game>)}
                             </div>
                         }
                     </div>
@@ -113,10 +125,10 @@ export default function MainPanel() {
                 </div>
             </div>
             <div className="basis-2/3 bg-zinc-800">
-                { loadingAchievements ?
+                {loadingAchievements ?
                     <Loading></Loading> :
                     <div className="flex flex-col gap-2 text-sm h-full overflow-y-auto p-8">
-                        {achievements.map(x => <Achievement title={x.title} description={x.description} icon_url={x.icon} percent={x.percent} ></Achievement>)}
+                        {achievements.map(x => <Achievement key={x.title} title={x.title} description={x.description} icon_url={x.icon} percent={x.percent} ></Achievement>)}
                     </div>
                 }
             </div>
