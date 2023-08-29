@@ -6,8 +6,8 @@ const STEAM_KEY = process.env.STEAM_KEY!;
 const MA_URL = process.env.MA_URL!;
 
 const steam = new SteamAuth({
-    realm: `http://${MA_URL}`,
-    returnUrl: `http://${MA_URL}/api/return`,
+    realm: MA_URL,
+    returnUrl: `${MA_URL}/api/return`,
     apiKey: STEAM_KEY
 });
 

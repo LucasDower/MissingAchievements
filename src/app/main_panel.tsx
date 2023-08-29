@@ -29,7 +29,7 @@ export default function MainPanel(props: { urlBase: string }) {
         }
 
         setLoadingGames(true);
-        fetch(`http://${props.urlBase}/api/games?u_id=${userId}`)
+        fetch(`${props.urlBase}/api/games?u_id=${userId}`)
             .then(res => res.json())
             .then(res => {
                 setGamesInfo(res);
@@ -54,7 +54,7 @@ export default function MainPanel(props: { urlBase: string }) {
 
         setAchievements({ data: [], meta: null });
         setLoadingAchievements(true);
-        fetch(`http://${props.urlBase}/api/achievements?u_id=${userId}&g_id=${gameId}`)
+        fetch(`${props.urlBase}/api/achievements?u_id=${userId}&g_id=${gameId}`)
             .then(res => res.json())
             .then(res => {
                 console.log(res);

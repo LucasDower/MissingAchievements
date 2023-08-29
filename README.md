@@ -14,7 +14,7 @@ npm install
 Create a `.env` file with your Steam API key like so:
 ```
 STEAM_KEY="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-MA_URL="localhost:3000"
+MA_URL="http://localhost:3000"
 ```
 Finally run
 ```bash
