@@ -6,6 +6,7 @@ import { ResponseData_Games } from '../../pages/api/games';
 import { ResponseData_Achievements } from '../../pages/api/achievements';
 import Achievement from './achievement';
 import Loading from './loading';
+import AchievementStatus from './loading copy';
 
 const USER_ID_REGEX = new RegExp('^([0-9]).{16}$');
 const GAME_ID_REGEX = new RegExp('^[0-9]{1,}$');
@@ -13,7 +14,7 @@ const GAME_ID_REGEX = new RegExp('^[0-9]{1,}$');
 export default function MainPanel() {
     const [steamId, setSteamId] = useState<string>('');
     const [gamesInfo, setGamesInfo] = useState<ResponseData_Games>([]);
-    const [achievements, setAchievements] = useState<ResponseData_Achievements>([]);
+    const [achievements, setAchievements] = useState<ResponseData_Achievements>({ data: [], meta: null });
     const [selectedGameId, setSelectedGameId] = useState<number>(NaN);
     const [loadingGames, setLoadingGames] = useState<boolean>(false);
     const [loadingAchievements, setLoadingAchievements] = useState<boolean>(false);
@@ -51,7 +52,7 @@ export default function MainPanel() {
             return;
         }
 
-        setAchievements([]);
+        setAchievements({ data: [], meta: null });
         setLoadingAchievements(true);
         fetch(`http://localhost:3000/api/achievements?u_id=${userId}&g_id=${gameId}`)
             .then(res => res.json())
@@ -62,14 +63,14 @@ export default function MainPanel() {
             })
             .catch((err) => {
                 console.log(err);
-                setAchievements([]);
+                setAchievements({ data: [], meta: null });
                 setSelectedGameId(NaN);
                 setLoadingAchievements(false);
             });
     };
 
     const handleLoadButton = () => {
-        setAchievements([]);
+        setAchievements({ data: [], meta: null });
         fetchGameData(steamId);
     };
 
@@ -125,12 +126,25 @@ export default function MainPanel() {
                 </div>
             </div>
             <div className="basis-2/3 bg-zinc-800">
-                {loadingAchievements ?
-                    <Loading></Loading> :
-                    <div className="flex flex-col gap-2 text-sm h-full overflow-y-auto p-8">
-                        {achievements.map(x => <Achievement key={x.title} title={x.title} description={x.description} icon_url={x.icon} percent={x.percent} ></Achievement>)}
-                    </div>
-                }
+                {loadingAchievements ? (
+                    <Loading></Loading>
+                ) : (
+                    achievements.meta !== null ? (
+                        <AchievementStatus status={achievements.meta}></AchievementStatus>
+                    ) : (
+                        <div className="flex flex-col gap-2 text-sm h-full overflow-y-auto p-8">
+                            {achievements.data.map(x => (
+                                <Achievement
+                                    key={x.title}
+                                    title={x.title}
+                                    description={x.description}
+                                    icon_url={x.icon}
+                                    percent={x.percent}
+                                ></Achievement>
+                            ))}
+                        </div>
+                    )
+                )}
             </div>
         </>
     );
