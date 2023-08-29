@@ -11,7 +11,7 @@ import AchievementStatus from './loading copy';
 const USER_ID_REGEX = new RegExp('^([0-9]).{16}$');
 const GAME_ID_REGEX = new RegExp('^[0-9]{1,}$');
 
-export default function MainPanel() {
+export default function MainPanel(props: { urlBase: string }) {
     const [steamId, setSteamId] = useState<string>('');
     const [gamesInfo, setGamesInfo] = useState<ResponseData_Games>([]);
     const [achievements, setAchievements] = useState<ResponseData_Achievements>({ data: [], meta: null });
@@ -29,7 +29,7 @@ export default function MainPanel() {
         }
 
         setLoadingGames(true);
-        fetch(`http://localhost:3000/api/games?u_id=${userId}`)
+        fetch(`http://${props.urlBase}/api/games?u_id=${userId}`)
             .then(res => res.json())
             .then(res => {
                 setGamesInfo(res);
@@ -54,7 +54,7 @@ export default function MainPanel() {
 
         setAchievements({ data: [], meta: null });
         setLoadingAchievements(true);
-        fetch(`http://localhost:3000/api/achievements?u_id=${userId}&g_id=${gameId}`)
+        fetch(`http://${props.urlBase}/api/achievements?u_id=${userId}&g_id=${gameId}`)
             .then(res => res.json())
             .then(res => {
                 console.log(res);

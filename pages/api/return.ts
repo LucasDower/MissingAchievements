@@ -3,10 +3,11 @@ import SteamAuth from 'node-steam-openid';
 import 'dotenv/config';
 
 const STEAM_KEY = process.env.STEAM_KEY!;
+const MA_URL = process.env.MA_URL!;
 
 const steam = new SteamAuth({
-    realm: "http://localhost:3000",
-    returnUrl: "http://localhost:3000/api/return",
+    realm: `http://${MA_URL}`,
+    returnUrl: `http://${MA_URL}/api/return`,
     apiKey: STEAM_KEY
 });
 
